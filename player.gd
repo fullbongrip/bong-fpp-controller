@@ -4,6 +4,7 @@ extends CharacterBody3D
 @onready var standing_collision = $standing_collision
 @onready var crouching_collision = $crouching_collision
 @onready var ray_cast_3d = $RayCast3D
+@onready var view_model_cam = $head/Camera3D/SubViewportContainer/SubViewport/view_model_cam
 
 var current_speed = 5.0
 var current_head_height = 1.8  # Default standing height
@@ -30,14 +31,18 @@ var is_jumping = false  # check if the player is in air
 
 func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	$head/Camera3D/SubViewportContainer/SubViewport.size = DisplayServer.window_get_size()
 
 func _input(event):
 	if event is InputEventMouseMotion:
 		rotate_y(deg_to_rad(-event.relative.x * mouse_sens))
 		head.rotate_x(deg_to_rad(-event.relative.y * mouse_sens))
 		head.rotation.x = clamp(head.rotation.x, deg_to_rad(-89), deg_to_rad(89))
+		view_model_cam.sway(Vector2(event.relative.x, event.relative.y))
 
 func _physics_process(delta):
+	$head/Camera3D/SubViewportContainer/SubViewport/view_model_cam.global_transform = $head/Camera3D.global_transform
+	
 	if Input.is_action_pressed("crouch"):
 		current_speed = crouch_speed
 		target_head_height = crouching_depth
@@ -90,3 +95,4 @@ func _physics_process(delta):
 
 	# Move the character
 	move_and_slide()
+
